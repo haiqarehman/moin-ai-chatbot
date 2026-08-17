@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy
+psycopg[binary]
+alembic
+pgvector
+openai
+anthropic
+aiosmtplib
+pytest
+httpx
+ruff==0.16.3
