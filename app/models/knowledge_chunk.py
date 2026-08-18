@@ -1,5 +1,6 @@
 from uuid import UUID, uuid4
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -25,7 +26,8 @@ class KnowledgeChunk(Base):
         nullable=False,
     )
 
-    embedding: Mapped[str | None] = mapped_column(
+    embedding: Mapped[list[float] | None] = mapped_column(
+        Vector(384),
         nullable=True,
     )
 
