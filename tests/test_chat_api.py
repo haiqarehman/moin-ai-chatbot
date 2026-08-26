@@ -60,3 +60,32 @@ def test_chat_api_handles_general_message():
     assert data["session_id"] == session.session_id
     assert data["state"] == "general_query"
     assert data["response"] == "general_query"
+def test_chat_api_rate_limit_blocks_excessive_requests():
+    from app.api.v1 import chat
+
+    original_limiter = getattr(chat, "rate_limiter", None)
+
+    class TestRateLimiter:
+        def allow(self, client_id: str) -> bool:
+            return False
+
+    chat.rate_limiter = TestRateLimiter()
+
+    try:
+        session = session_manager.create_session()
+
+        response = client.post(
+            "/api/v1/chat/messages",
+            json={
+                "session_id": session.session_id,
+                "message": "Hello",
+            },
+        )
+
+        assert response.status_code == 429
+        assert response.json()["detail"] == "Rate limit exceeded."
+    finally:
+        if original_limiter is None:
+            delattr(chat, "rate_limiter")
+        else:
+            chat.rate_limiter = original_limiter    
