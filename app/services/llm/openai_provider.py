@@ -1,7 +1,6 @@
-import os
-
 from openai import OpenAI
 
+from app.core.config import settings
 from app.services.llm.base import LLMProvider
 
 
@@ -11,7 +10,7 @@ class OpenAIProvider(LLMProvider):
     """
 
     def __init__(self):
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = settings.openai_api_key
 
         if not api_key:
             raise ValueError("OPENAI_API_KEY is not set")
@@ -41,10 +40,14 @@ class OpenAIProvider(LLMProvider):
             }
         )
 
-        response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            temperature=0.2,
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=messages,
+                temperature=0.2,
+            )
+        except Exception as exc:
+            print("OPENAI ERROR:", repr(exc))
+            raise
 
         return response.choices[0].message.content or ""

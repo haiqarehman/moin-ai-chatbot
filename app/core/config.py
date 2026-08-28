@@ -6,8 +6,9 @@ class Settings(BaseSettings):
 
     database_url: str = ""
 
-    llm_provider: str = "openai"
+    llm_provider: str = "gemini"
     openai_api_key: str = ""
+    gemini_api_key: str = ""
     anthropic_api_key: str = ""
 
     embedding_model: str = ""
@@ -22,7 +23,7 @@ class Settings(BaseSettings):
 
     app_secret: str = ""
     rate_limit: int = 60
-    allowed_origins: str = "http://localhost:3000"
+    allowed_origins: str = "http://localhost:5173"
 
     model_config = SettingsConfigDict(
         env_file=".env",

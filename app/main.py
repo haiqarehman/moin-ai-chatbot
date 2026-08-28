@@ -21,6 +21,8 @@ allowed_origins = [
     if origin.strip()
 ]
 
+print("CORS ALLOWED ORIGINS:", allowed_origins)
+
 
 app.add_middleware(
     CORSMiddleware,

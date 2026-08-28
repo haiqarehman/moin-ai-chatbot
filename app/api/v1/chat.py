@@ -75,6 +75,7 @@ def send_message(
             body.session_id,
             body.message,
         )
+
     except ValueError as exc:
         logger.error(
             "request_id=%s session_id=%s event=chat_error error=%s",
@@ -86,6 +87,25 @@ def send_message(
         raise HTTPException(
             status_code=404,
             detail=str(exc),
+        )
+
+    except Exception as exc:
+        print()
+        print("========== CHAT ERROR ==========")
+        print("ERROR TYPE:", type(exc).__name__)
+        print("ERROR:", str(exc))
+        print("================================")
+        print()
+
+        logger.exception(
+            "request_id=%s session_id=%s event=unexpected_chat_error",
+            request_id,
+            body.session_id,
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chat service error: {str(exc)}",
         )
 
     elapsed_ms = round(
