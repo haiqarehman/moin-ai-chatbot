@@ -3,7 +3,6 @@ from app.services.lead_state import LeadState
 
 NOTIFICATION_RECIPIENT = "info@moinsystemsai.com"
 
-
 def build_lead_notification(lead: LeadState) -> dict:
     subject = "New Lead Captured"
 

@@ -3,6 +3,9 @@ from app.services.intent_router import IntentRouter
 from app.services.lead_capture import LeadCaptureService
 from app.services.session_manager import SessionManager
 from app.services.llm.gemini_provider import GeminiProvider
+from app.services.notification_service import NotificationService
+from app.services.email_retry import RetryingEmailService
+from app.services.smtp_email_service import SMTPEmailService
 
 
 class ChatFlow:
@@ -17,6 +20,13 @@ class ChatFlow:
 
         self.chat_service = ChatService(
             llm_provider=GeminiProvider(),
+        )
+
+        self.notification_service = NotificationService(
+            email_service=RetryingEmailService(
+                SMTPEmailService(),
+                max_attempts=3,
+            ),
         )
 
     def process_message(
@@ -43,7 +53,7 @@ class ChatFlow:
                 )
 
             try:
-                next_field = self.lead_capture.capture(
+                self.lead_capture.capture(
                     session.lead_state,
                     field_name,
                     message,
@@ -57,20 +67,37 @@ class ChatFlow:
                 message,
             )
 
-            if next_field == "email":
-                return "Thank you. Please provide your email address."
+            # -------------------------------------------------
+            # Lead collection is complete.
+            # Send notification email.
+            # -------------------------------------------------
+            if session.lead_state.is_complete():
+                self.notification_service.notify_lead(
+                    session.lead_state
+                )
 
-            if next_field == "contact_number":
-                return "Thank you. Please provide your contact number."
-
-            if next_field is None:
                 return (
                     "Thank you! Your contact information has been "
                     "captured successfully. Our team will get in touch "
                     "with you shortly."
                 )
 
-            return f"Please provide your {next_field.replace('_', ' ')}."
+            next_field = session.lead_state.next_required_field()
+
+            if next_field == "email":
+                return (
+                    "Thank you. Please provide your email address."
+                )
+
+            if next_field == "contact_number":
+                return (
+                    "Thank you. Please provide your contact number."
+                )
+
+            return (
+                f"Please provide your "
+                f"{next_field.replace('_', ' ')}."
+            )
 
         # -------------------------------------------------
         # Normal intent detection
