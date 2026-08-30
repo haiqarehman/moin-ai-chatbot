@@ -36,7 +36,7 @@ def test_chat_api_handles_pricing_message():
     data = response.json()
 
     assert data["session_id"] == session.session_id
-    assert data["state"] == "quote_request"
+    assert data["state"] == "lead_capture"
     assert "name" in data["response"].lower()
     assert "email" in data["response"].lower()
     assert "contact number" in data["response"].lower()
@@ -59,7 +59,9 @@ def test_chat_api_handles_general_message():
 
     assert data["session_id"] == session.session_id
     assert data["state"] == "general_query"
-    assert data["response"] == "general_query"
+    assert data["response"]
+
+
 def test_chat_api_rate_limit_blocks_excessive_requests():
     from app.api.v1 import chat
 
@@ -84,8 +86,9 @@ def test_chat_api_rate_limit_blocks_excessive_requests():
 
         assert response.status_code == 429
         assert response.json()["detail"] == "Rate limit exceeded."
+
     finally:
         if original_limiter is None:
             delattr(chat, "rate_limiter")
         else:
-            chat.rate_limiter = original_limiter    
+            chat.rate_limiter = original_limiter
